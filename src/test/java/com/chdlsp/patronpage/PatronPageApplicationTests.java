@@ -1,10 +1,10 @@
 package com.chdlsp.patronpage;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PatronPageApplicationTests {
+public class PatronPageApplicationTests {
 
 	@Test
 	void contextLoads() {

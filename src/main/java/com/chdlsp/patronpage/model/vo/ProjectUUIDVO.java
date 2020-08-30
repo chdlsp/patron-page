@@ -1,20 +1,18 @@
-package com.chdlsp.patronpage.model.network.request;
+package com.chdlsp.patronpage.model.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class SupportRequest {
-
-    UUID projectId;
-    BigDecimal sponsorAmt;
-
+@Accessors(chain = true)
+public class ProjectUUIDVO {
+    private UUID projectId; // project ID
 }

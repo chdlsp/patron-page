@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProjectResultResponse {
+public class ProjectResultResponse extends Throwable {
 
     String code;
     String message;

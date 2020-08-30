@@ -1,11 +1,12 @@
 package com.chdlsp.patronpage.controller;
 
-
-import com.chdlsp.patronpage.model.entity.ProjectEntity;
+import com.chdlsp.patronpage.exception.SupportAmountException;
 import com.chdlsp.patronpage.model.network.request.SupportRequest;
+import com.chdlsp.patronpage.model.network.response.ProjectAllResponse;
+import com.chdlsp.patronpage.model.network.response.ProjectInfoResponse;
 import com.chdlsp.patronpage.model.network.response.ProjectResultResponse;
 import com.chdlsp.patronpage.model.vo.ProjectVO;
-import com.chdlsp.patronpage.model.vo.DeleteProjectVO;
+import com.chdlsp.patronpage.model.vo.ProjectUUIDVO;
 import com.chdlsp.patronpage.service.ProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,12 +69,12 @@ public class ProjectController {
 
     // 프로젝트 삭제 => front 단에서 사용자가 클릭한 프로젝트의 projectId (UUID) 값이 넘어온다고 가정한다.
     @DeleteMapping
-    public ProjectResultResponse deleteProject(@RequestBody DeleteProjectVO deleteProjectVO) {
+    public ProjectResultResponse deleteProject(@RequestBody ProjectUUIDVO projectUUIDVO) {
 
-        log.info("deleteProject projectId UUID : " + deleteProjectVO.toString());
+        log.info("deleteProject projectId UUID : " + projectUUIDVO.toString());
 
         // projectId null 여부 체크에 따른 메세지 리턴
-        Optional<UUID> isExistsId = Optional.ofNullable(deleteProjectVO.getProjectId());
+        Optional<UUID> isExistsId = Optional.ofNullable(projectUUIDVO.getProjectId());
 
         return isExistsId.map(selectData -> {
             ProjectResultResponse projectResultResponse = projectService.deleteProject(selectData);
@@ -88,26 +90,20 @@ public class ProjectController {
 
     // 공개된 프로젝트 조회 (paging 단위 : 10개 => PageableDefault size default = 10)
     @GetMapping
-    public List<ProjectVO> getAllProject(@RequestParam String orderCode, @PageableDefault Pageable pageable) {
+    public List<ProjectAllResponse> getAllProject(@PageableDefault Pageable pageable) {
 
-        /* orderCode
-        * 0 : none
-        * 1 : 시작일 순
-        * 2 : 마감일 순
-        * 3 : 목표액 순
-        * 4 : 후원액 순
-        * 기타 : 에러 */
+        log.info("pageable : {}", pageable);
 
-        List<ProjectVO> result = projectService.getAllProject(orderCode, pageable);
+        List<ProjectAllResponse> result = projectService.getAllProject(pageable);
 
         return result;
     }
 
     // 특정 프로젝트 정보 조회
     @GetMapping("/info")
-    public ProjectVO getProjectInfo(@RequestParam UUID projectId) {
+    public ProjectInfoResponse getProjectInfo(@RequestBody ProjectUUIDVO projectUUIDVO) {
 
-        ProjectVO result = projectService.getProjectInfo(projectId);
+        ProjectInfoResponse result = projectService.getProjectInfo(projectUUIDVO.getProjectId());
 
         return result;
     }
@@ -116,12 +112,17 @@ public class ProjectController {
     @PutMapping("/support")
     public ProjectResultResponse sponsorProject(@RequestBody SupportRequest supportRequest) {
 
+        // 후원 입력 받은 금액이 0원 이하인 경우
+        if(supportRequest.getSponsorAmt().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new SupportAmountException(supportRequest.getSponsorAmt());
+        }
+
         ProjectResultResponse result = projectService.sponsorProject(supportRequest);
 
         return result;
     }
 
-    @GetMapping("/dummy")
+    @PostMapping("/dummy")
     public ProjectResultResponse createDummyProject() {
 
         ProjectResultResponse result = projectService.createDummyProject();

@@ -14,5 +14,5 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, UUID> {
 
     Page<ProjectEntity> findAll(Pageable pageable);
     Optional<ProjectEntity> findByProjectId(UUID projectId);
-
+    ProjectEntity save(ProjectEntity projectEntity);
 }

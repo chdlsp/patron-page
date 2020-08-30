@@ -38,8 +38,8 @@ public class ProjectEntity {
     private String artistEmail; // 창작자 이메일
     private String artistPhoneNumber; // 창작자 휴대폰번호
 
-    private LocalDateTime projectStartTime; // 프로젝트 시작일
-    private LocalDateTime projectEndTime; // 프로젝트 마감일
+    private String projectStartTime; // 프로젝트 시작일
+    private String projectEndTime; // 프로젝트 마감일
 
     private BigDecimal goalAmt; // 목표액
     private int patronUsers; // 후원수

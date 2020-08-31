@@ -155,9 +155,12 @@ public class ProjectService {
         if(projectPatronVO.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0) {
 
             log.info("projectPatronVO : " + projectPatronVO.toString());
-            log.info("time Info : " + nowDateTime.isAfter(endTime));
+            log.info("time Info : " + nowDateTime.isAfter(endTime) + " " + nowDateTime + " " + endTime);
+
 
             if(nowDateTime.isAfter(endTime)) {
+                log.info("amount Info : " + projectPatronVO.getCurrentAmount().compareTo(projectPatronVO.getGoalAmount()));
+
                 if(projectPatronVO.getCurrentAmount().compareTo(projectPatronVO.getGoalAmount()) < 0) {
                     projectStatus = ProjectStatus.FAILURE;
                 } else {
@@ -349,7 +352,7 @@ public class ProjectService {
                     .artistEmail("USER".concat(forEachSeq).concat("@gmail.com"))
                     .artistPhoneNumber("0101234".concat(String.format("%04d", i)))
                     .projectStartTime(nowTime.format(dateTimeFormatter))
-                    .projectEndTime(nowTime.plusHours(i * 10).format(dateTimeFormatter))
+                    .projectEndTime(nowTime.plusSeconds(i * 10).format(dateTimeFormatter))
                     .goalAmt(BigDecimal.valueOf(i * 100000L))
                     .patronUsers(0)
                     .patronAmt(BigDecimal.ZERO)

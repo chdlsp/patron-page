@@ -5,9 +5,11 @@ import com.chdlsp.patronpage.model.network.request.SupportRequest;
 import com.chdlsp.patronpage.model.network.response.ProjectAllResponse;
 import com.chdlsp.patronpage.model.network.response.ProjectInfoResponse;
 import com.chdlsp.patronpage.model.network.response.ProjectResultResponse;
-import com.chdlsp.patronpage.model.vo.ProjectVO;
+import com.chdlsp.patronpage.model.vo.ProjectDefaultVO;
 import com.chdlsp.patronpage.model.vo.ProjectUUIDVO;
 import com.chdlsp.patronpage.service.ProjectService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +36,7 @@ public class ProjectController {
 
     // 프로젝트 등록
     @PostMapping
-    public ProjectResultResponse createProject(@RequestBody @Valid ProjectVO projectVO, BindingResult bindingResult) {
+    public ProjectResultResponse createProject(@RequestBody @Valid ProjectDefaultVO projectDefaultVO, BindingResult bindingResult) {
 
         ProjectResultResponse result = new ProjectResultResponse();
 
@@ -43,16 +45,16 @@ public class ProjectController {
             result.setCode("3000");
             result.setMessage(fieldError.getDefaultMessage());
         } else {
-            result = projectService.createProject(projectVO);
+            result = projectService.createProject(projectDefaultVO);
         }
         return result;
     }
 
     // 프로젝트 수정
     @PutMapping
-    public ProjectResultResponse updateProject(@RequestBody @Valid ProjectVO projectVO, BindingResult bindingResult) {
+    public ProjectResultResponse updateProject(@RequestBody @Valid ProjectDefaultVO projectDefaultVO, BindingResult bindingResult) {
 
-        log.info("updateProject projectVO UUID : " + projectVO.getProjectId());
+        log.info("updateProject projectVO UUID : " + projectDefaultVO.getProjectId());
 
         ProjectResultResponse result = new ProjectResultResponse();
 
@@ -61,7 +63,7 @@ public class ProjectController {
             result.setCode("3000");
             result.setMessage(fieldError.getDefaultMessage());
         } else {
-            result = projectService.updateProject(projectVO);
+            result = projectService.updateProject(projectDefaultVO);
         }
 
         return result;
@@ -89,6 +91,13 @@ public class ProjectController {
     }
 
     // 공개된 프로젝트 조회 (paging 단위 : 10개 => PageableDefault size default = 10)
+    // swagger pageable 처리 참고 : https://github.com/springfox/springfox/issues/2623
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "sort", allowMultiple = true, dataType = "string", paramType = "query",
+                    value = "Sorting criteria in the format: property(,asc|desc). " +
+                            "Default sort order is ascending. " +
+                            "Multiple sort criteria are supported.")
+    })
     @GetMapping
     public List<ProjectAllResponse> getAllProject(@PageableDefault Pageable pageable) {
 
@@ -101,8 +110,9 @@ public class ProjectController {
 
     // 특정 프로젝트 정보 조회
     @GetMapping("/info")
-    public ProjectInfoResponse getProjectInfo(@RequestBody ProjectUUIDVO projectUUIDVO) {
+    public ProjectInfoResponse getProjectInfo(ProjectUUIDVO projectUUIDVO) {
 
+        log.info("projectId : " + projectUUIDVO.getProjectId());
         ProjectInfoResponse result = projectService.getProjectInfo(projectUUIDVO.getProjectId());
 
         return result;

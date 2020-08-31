@@ -10,7 +10,7 @@ import com.chdlsp.patronpage.model.network.request.SupportRequest;
 import com.chdlsp.patronpage.model.network.response.ProjectAllResponse;
 import com.chdlsp.patronpage.model.network.response.ProjectInfoResponse;
 import com.chdlsp.patronpage.model.network.response.ProjectResultResponse;
-import com.chdlsp.patronpage.model.vo.ProjectVO;
+import com.chdlsp.patronpage.model.vo.ProjectDefaultVO;
 import com.chdlsp.patronpage.repository.ProjectRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 @Service
-@Transactional
 @Slf4j
 public class ProjectService {
 
@@ -34,20 +33,21 @@ public class ProjectService {
     private ProjectRepository projectRepository;
 
     // 프로젝트 등록
-    public ProjectResultResponse createProject(ProjectVO projectVO) {
+    @Transactional
+    public ProjectResultResponse createProject(ProjectDefaultVO projectDefaultVO) {
 
         ProjectEntity projectEntity = ProjectEntity.builder()
-                .projectName(projectVO.getProjectName())
-                .projectDesc(projectVO.getProjectDesc())
-                .artistName(projectVO.getArtistName())
-                .artistEmail(projectVO.getArtistEmail())
-                .artistPhoneNumber(projectVO.getArtistPhoneNumber())
-                .projectStartTime(projectVO.getProjectStartTime())
-                .projectEndTime(projectVO.getProjectEndTime())
-                .goalAmt(projectVO.getGoalAmt())
-                .openYn(projectVO.getOpenYn())
-                .patronAmt(projectVO.getPatronAmt())
-                .patronUsers(projectVO.getPatronUsers())
+                .projectName(projectDefaultVO.getProjectName())
+                .projectDesc(projectDefaultVO.getProjectDesc())
+                .artistName(projectDefaultVO.getArtistName())
+                .artistEmail(projectDefaultVO.getArtistEmail())
+                .artistPhoneNumber(projectDefaultVO.getArtistPhoneNumber())
+                .projectStartTime(projectDefaultVO.getProjectStartTime())
+                .projectEndTime(projectDefaultVO.getProjectEndTime())
+                .goalAmt(projectDefaultVO.getGoalAmt())
+                .openYn(projectDefaultVO.getOpenYn())
+                .patronAmt(projectDefaultVO.getPatronAmt())
+                .patronUsers(projectDefaultVO.getPatronUsers())
                 .projectStatus(ProjectStatus.READY)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -67,22 +67,24 @@ public class ProjectService {
     }
 
     // 프로젝트 수정
-    public ProjectResultResponse updateProject(ProjectVO projectVO) {
+    @Transactional
+    public ProjectResultResponse updateProject(ProjectDefaultVO projectDefaultVO) {
 
         ProjectEntity projectEntity = ProjectEntity.builder()
-                .projectId(projectVO.getProjectId())
-                .projectName(projectVO.getProjectName())
-                .projectDesc(projectVO.getProjectDesc())
-                .artistName(projectVO.getArtistName())
-                .artistEmail(projectVO.getArtistEmail())
-                .artistPhoneNumber(projectVO.getArtistPhoneNumber())
-                .projectStartTime(projectVO.getProjectStartTime())
-                .projectEndTime(projectVO.getProjectEndTime())
-                .goalAmt(projectVO.getGoalAmt())
-                .patronUsers(projectVO.getPatronUsers())
-                .patronAmt(projectVO.getPatronAmt())
-                .openYn(projectVO.getOpenYn())
-                .projectStatus(projectVO.getProjectStatus())
+                .projectId(projectDefaultVO.getProjectId())
+                .projectName(projectDefaultVO.getProjectName())
+                .projectDesc(projectDefaultVO.getProjectDesc())
+                .artistName(projectDefaultVO.getArtistName())
+                .artistEmail(projectDefaultVO.getArtistEmail())
+                .artistPhoneNumber(projectDefaultVO.getArtistPhoneNumber())
+                .projectStartTime(projectDefaultVO.getProjectStartTime())
+                .projectEndTime(projectDefaultVO.getProjectEndTime())
+                .goalAmt(projectDefaultVO.getGoalAmt())
+                .patronUsers(projectDefaultVO.getPatronUsers())
+                .patronAmt(projectDefaultVO.getPatronAmt())
+                .openYn(projectDefaultVO.getOpenYn())
+                .projectStatus(projectDefaultVO.getProjectStatus())
+                .createdAt(projectDefaultVO.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
@@ -130,6 +132,7 @@ public class ProjectService {
     }
 
     // 시스템은 프로젝트 상태를 업데이트 합니다.
+    @Transactional
     public ProjectStatus updateCurrentProjectStatus(ProjectStatusVO projectStatusVO,
                                                     ProjectPatronVO projectPatronVO) {
 
@@ -285,6 +288,7 @@ public class ProjectService {
     }
 
     // 프로젝트 후원
+    @Transactional
     public ProjectResultResponse sponsorProject(SupportRequest supportRequest) {
 
         UUID projectId = supportRequest.getProjectId();
@@ -329,6 +333,7 @@ public class ProjectService {
     }
 
     // dummy project 생성 용 서비스
+    @Transactional
     public ProjectResultResponse createDummyProject() {
 
         ProjectResultResponse result = new ProjectResultResponse();
@@ -353,7 +358,7 @@ public class ProjectService {
                     .artistPhoneNumber("0101234".concat(String.format("%04d", i)))
                     .projectStartTime(nowTime.format(dateTimeFormatter))
                     .projectEndTime(nowTime.plusSeconds(i * 10).format(dateTimeFormatter))
-                    .goalAmt(BigDecimal.valueOf(i * 100000L))
+                    .goalAmt(BigDecimal.valueOf((i+1) * 10000L))
                     .patronUsers(0)
                     .patronAmt(BigDecimal.ZERO)
                     .projectStatus(ProjectStatus.READY)

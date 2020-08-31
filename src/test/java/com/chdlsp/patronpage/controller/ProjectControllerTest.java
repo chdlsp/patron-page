@@ -1,7 +1,7 @@
 package com.chdlsp.patronpage.controller;
 
 import com.chdlsp.patronpage.PatronPageApplicationTests;
-import com.chdlsp.patronpage.model.vo.ProjectVO;
+import com.chdlsp.patronpage.model.vo.ProjectDefaultVO;
 import com.chdlsp.patronpage.service.ProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,7 +32,7 @@ public class ProjectControllerTest extends PatronPageApplicationTests {
     @Test
     public void createProject() throws JsonProcessingException {
 
-        final ProjectVO request = ProjectVO.builder()
+        final ProjectDefaultVO request = ProjectDefaultVO.builder()
                 .projectName("COMPUTER000")
                 .projectDesc("컴퓨터000")
                 .artistName("USER000")

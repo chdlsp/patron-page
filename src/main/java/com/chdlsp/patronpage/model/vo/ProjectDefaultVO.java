@@ -26,7 +26,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-public class ProjectVO {
+public class ProjectDefaultVO {
 
     private UUID projectId; // project ID
 

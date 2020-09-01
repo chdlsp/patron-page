@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Max;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -15,6 +16,8 @@ import java.util.UUID;
 public class SupportRequest {
 
     UUID projectId;
+
+    @Max(value = 100000000)
     BigDecimal sponsorAmt;
 
 }

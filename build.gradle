@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.chdlsp'
-version = '0.0.1-SNAPSHOT'
+version = '0.1'
 sourceCompatibility = '1.8'
 
 configurations {
@@ -23,26 +23,23 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	annotationProcessor 'org.projectlombok:lombok'
-
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
-	testImplementation('org.junit.jupiter:junit-jupiter-api:5.2.0')
-	testCompile('org.junit.jupiter:junit-jupiter-params:5.2.0')
-	testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
-	testCompileOnly 'org.projectlombok:lombok'
 
 	compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 	compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+	implementation 'com.h2database:h2'
+	implementation 'mysql:mysql-connector-java'
 
+	compileOnly 'org.projectlombok:lombok'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {

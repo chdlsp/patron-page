@@ -10,6 +10,7 @@ import com.chdlsp.patronpage.model.vo.ProjectUUIDVO;
 import com.chdlsp.patronpage.service.ProjectService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ public class ProjectController {
     private ProjectService projectService;
 
     // 프로젝트 등록
+    @ApiOperation(value = "프로젝트 등록", notes = "신규 프로젝트를 등록합니다. \n 성공 CODE : 1000 \n 실패 CODE : 3000(데이터 Valid Check)")
     @PostMapping
     public ProjectResultResponse createProject(@RequestBody @Valid ProjectDefaultVO projectDefaultVO, BindingResult bindingResult) {
 
@@ -50,7 +52,10 @@ public class ProjectController {
         return result;
     }
 
-    // 프로젝트 수정
+    // 프로젝트 수정 => front 단에서 사용자가 클릭한 프로젝트의 projectId (UUID) 값이 넘어온다고 가정한다.
+    @ApiOperation(value = "프로젝트 수정", notes = "등록된 프로젝트를 수정합니다. \n" +
+            " 성공 CODE : 1000 \n" +
+            " 실패 CODE : 2010(DB Update 시 에러), 3000(데이터 Valid Check), 4000(프로젝트 ID 미존재)")
     @PutMapping
     public ProjectResultResponse updateProject(@RequestBody @Valid ProjectDefaultVO projectDefaultVO, BindingResult bindingResult) {
 
@@ -70,6 +75,9 @@ public class ProjectController {
     }
 
     // 프로젝트 삭제 => front 단에서 사용자가 클릭한 프로젝트의 projectId (UUID) 값이 넘어온다고 가정한다.
+    @ApiOperation(value = "프로젝트 삭제", notes = "등록된 프로젝트를 삭제합니다. \n" +
+            " 성공 CODE : 1000 \n" +
+            " 실패 CODE : 2020(DB Delete 시 에러), 3000(데이터 Valid Check), 4000(프로젝트 ID 미존재)")
     @DeleteMapping
     public ProjectResultResponse deleteProject(@RequestBody ProjectUUIDVO projectUUIDVO) {
 
@@ -98,6 +106,7 @@ public class ProjectController {
                             "Default sort order is ascending. " +
                             "Multiple sort criteria are supported.")
     })
+    @ApiOperation(value = "프로젝트 조회", notes = "공개된 프로젝트를 조회합니다. (paging 단위 : 10개 => PageableDefault size default = 10)")
     @GetMapping
     public List<ProjectAllResponse> getAllProject(@PageableDefault Pageable pageable) {
 
@@ -110,6 +119,7 @@ public class ProjectController {
 
     // 특정 프로젝트 정보 조회
     @GetMapping("/info")
+    @ApiOperation(value = "특정 프로젝트 조회", notes = "등록된 특정 프로젝트를 조회합니다.")
     public ProjectInfoResponse getProjectInfo(ProjectUUIDVO projectUUIDVO) {
 
         log.info("projectId : " + projectUUIDVO.getProjectId());
@@ -120,19 +130,31 @@ public class ProjectController {
 
     // 프로젝트 후원
     @PutMapping("/support")
-    public ProjectResultResponse sponsorProject(@RequestBody SupportRequest supportRequest) {
+    @ApiOperation(value = "프로젝트 후원", notes = "등록된 프로젝트를 수정합니다. \n" +
+            " 성공 CODE : 1000 \n" +
+            " 실패 CODE : 3000(후원금액 Data 검증), 5000(후원금액 초과), 5010(후원자 초과)")
+    public ProjectResultResponse sponsorProject(@RequestBody @Valid SupportRequest supportRequest, BindingResult bindingResult) {
 
-        // 후원 입력 받은 금액이 0원 이하인 경우
-        if(supportRequest.getSponsorAmt().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new SupportAmountException(supportRequest.getSponsorAmt());
+        ProjectResultResponse result = new ProjectResultResponse();
+
+        if(bindingResult.hasErrors()) {
+            FieldError fieldError = bindingResult.getFieldError();
+            result.setCode("3000");
+            result.setMessage(fieldError.getDefaultMessage());
+        } else {
+            // 후원 입력 받은 금액이 0원 이하인 경우
+            if(supportRequest.getSponsorAmt().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new SupportAmountException(supportRequest.getSponsorAmt());
+            } else {
+                result = projectService.sponsorProject(supportRequest);
+            }
         }
-
-        ProjectResultResponse result = projectService.sponsorProject(supportRequest);
 
         return result;
     }
 
     @PostMapping("/dummy")
+    @ApiOperation(value = "더미 프로젝트 생성", notes = "더미 프로젝트를 생성합니다. (100건)")
     public ProjectResultResponse createDummyProject() {
 
         ProjectResultResponse result = projectService.createDummyProject();

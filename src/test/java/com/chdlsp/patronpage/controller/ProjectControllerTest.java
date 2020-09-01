@@ -1,14 +1,10 @@
 package com.chdlsp.patronpage.controller;
 
-import com.chdlsp.patronpage.PatronPageApplicationTests;
 import com.chdlsp.patronpage.model.vo.ProjectDefaultVO;
-import com.chdlsp.patronpage.service.ProjectService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -16,12 +12,8 @@ import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringJUnitConfig
-@WebMvcTest(controllers = ProjectController.class)
-public class ProjectControllerTest extends PatronPageApplicationTests {
-
-    @Autowired
-    private ProjectService projectService;
+@WebMvcTest({ProjectController.class})
+public class ProjectControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -30,9 +22,9 @@ public class ProjectControllerTest extends PatronPageApplicationTests {
     private ObjectMapper objectMapper;
 
     @Test
-    public void createProject() throws JsonProcessingException {
+    public void createProject() throws Exception {
 
-        final ProjectDefaultVO request = ProjectDefaultVO.builder()
+        ProjectDefaultVO request = ProjectDefaultVO.builder()
                 .projectName("COMPUTER000")
                 .projectDesc("컴퓨터000")
                 .artistName("USER000")
@@ -43,7 +35,8 @@ public class ProjectControllerTest extends PatronPageApplicationTests {
                 .goalAmt(BigDecimal.valueOf(100000))
                 .build();
 
-        final String body = objectMapper.writeValueAsString(request);
+        System.out.println("request : " + request.toString());
+        String body = objectMapper.writeValueAsString(request.toString());
 
         try {
             mvc.perform(post("/project")

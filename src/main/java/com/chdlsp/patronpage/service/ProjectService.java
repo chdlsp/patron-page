@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -25,8 +26,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.IntStream;
 
-@Service
 @Slf4j
+@Service
 public class ProjectService {
 
     @Autowired
@@ -69,37 +70,45 @@ public class ProjectService {
     // 프로젝트 수정
     @Transactional
     public ProjectResultResponse updateProject(ProjectDefaultVO projectDefaultVO) {
-
-        ProjectEntity projectEntity = ProjectEntity.builder()
-                .projectId(projectDefaultVO.getProjectId())
-                .projectName(projectDefaultVO.getProjectName())
-                .projectDesc(projectDefaultVO.getProjectDesc())
-                .artistName(projectDefaultVO.getArtistName())
-                .artistEmail(projectDefaultVO.getArtistEmail())
-                .artistPhoneNumber(projectDefaultVO.getArtistPhoneNumber())
-                .projectStartTime(projectDefaultVO.getProjectStartTime())
-                .projectEndTime(projectDefaultVO.getProjectEndTime())
-                .goalAmt(projectDefaultVO.getGoalAmt())
-                .patronUsers(projectDefaultVO.getPatronUsers())
-                .patronAmt(projectDefaultVO.getPatronAmt())
-                .openYn(projectDefaultVO.getOpenYn())
-                .projectStatus(projectDefaultVO.getProjectStatus())
-                .createdAt(projectDefaultVO.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        Optional<ProjectEntity> isExistsId = projectRepository.findByProjectId(projectDefaultVO.getProjectId());
 
         ProjectResultResponse result = new ProjectResultResponse();
 
-        try {
-            projectRepository.save(projectEntity);
-            result.setCode("1000");
-            result.setMessage("DB Update 성공");
-        } catch (Exception e) {
-            result.setCode("2010");
-            result.setMessage("DB Update 중 에러가 발생했습니다.");
-        }
+        return isExistsId.map(selectData -> {
+            ProjectEntity projectEntity = ProjectEntity.builder()
+                    .projectId(projectDefaultVO.getProjectId())
+                    .projectName(projectDefaultVO.getProjectName())
+                    .projectDesc(projectDefaultVO.getProjectDesc())
+                    .artistName(projectDefaultVO.getArtistName())
+                    .artistEmail(projectDefaultVO.getArtistEmail())
+                    .artistPhoneNumber(projectDefaultVO.getArtistPhoneNumber())
+                    .projectStartTime(projectDefaultVO.getProjectStartTime())
+                    .projectEndTime(projectDefaultVO.getProjectEndTime())
+                    .goalAmt(projectDefaultVO.getGoalAmt())
+                    .patronUsers(projectDefaultVO.getPatronUsers())
+                    .patronAmt(projectDefaultVO.getPatronAmt())
+                    .openYn(projectDefaultVO.getOpenYn())
+                    .projectStatus(projectDefaultVO.getProjectStatus())
+                    .createdAt(selectData.getCreatedAt())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
 
-        return result;
+            try {
+                projectRepository.save(projectEntity);
+                result.setCode("1000");
+                result.setMessage("DB Update 성공");
+            } catch (Exception e) {
+                result.setCode("2010");
+                result.setMessage("DB Update 중 에러가 발생했습니다.");
+            }
+
+            return result;
+        }).orElseGet(() -> {
+            result.setCode("4000");
+            result.setMessage("존재하지 않는 프로젝트 입니다.");
+
+            return result;
+        });
     }
 
     // 프로젝트 삭제 => front 단에서 사용자가 클릭한 프로젝트의 projectId (UUID) 값이 넘어온다고 가정한다.
@@ -124,7 +133,7 @@ public class ProjectService {
 
             return result;
         }).orElseGet(() -> {
-            result.setCode("2021");
+            result.setCode("4000");
             result.setMessage("존재하지 않는 프로젝트 입니다.");
 
             return result;
@@ -154,15 +163,10 @@ public class ProjectService {
             }
         }
 
-        // 후원받은 금액이 있는 경우 @TODO SUCCESS, FAILURE 로직 체크 필요
+        // 후원받은 금액이 있는 경우
         if(projectPatronVO.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0) {
 
-            log.info("projectPatronVO : " + projectPatronVO.toString());
-            log.info("time Info : " + nowDateTime.isAfter(endTime) + " " + nowDateTime + " " + endTime);
-
-
             if(nowDateTime.isAfter(endTime)) {
-                log.info("amount Info : " + projectPatronVO.getCurrentAmount().compareTo(projectPatronVO.getGoalAmount()));
 
                 if(projectPatronVO.getCurrentAmount().compareTo(projectPatronVO.getGoalAmount()) < 0) {
                     projectStatus = ProjectStatus.FAILURE;
@@ -175,7 +179,6 @@ public class ProjectService {
         // 프로젝트 상태 조회 값이 변경된 경우 update 처리
         if(!projectStatusVO.getCurrentStatus().equals(projectStatus)) {
 
-            // @TODO : PK인 UUID 시 UPDATE 처리가 제대로 되지 않아 확인 필요
             Optional<ProjectEntity> selectEntity = projectRepository.findByProjectId(projectStatusVO.getProjectId());
 
             ProjectEntity projectEntity = ProjectEntity.builder()
@@ -294,23 +297,54 @@ public class ProjectService {
         UUID projectId = supportRequest.getProjectId();
         Optional<ProjectEntity> projectEntityByProjectId = projectRepository.findByProjectId(projectId);
 
-        ProjectStatus currentStatus = projectEntityByProjectId.get().getProjectStatus();
-        String projectStartTime = projectEntityByProjectId.get().getProjectStartTime();
-        String projectEndTime = projectEntityByProjectId.get().getProjectEndTime();
+        ProjectEntity projectEntity;
 
-        BigDecimal currentAmount = projectEntityByProjectId.get().getPatronAmt(); // 현재 누적 후원금
+        if(!projectEntityByProjectId.isPresent()) {
+            throw new NotFoundException(projectId);
+        } else {
+            projectEntity = projectEntityByProjectId.get();
+        }
+
+        ProjectStatus currentStatus = projectEntity.getProjectStatus();
+        String projectStartTime = projectEntity.getProjectStartTime();
+        String projectEndTime = projectEntity.getProjectEndTime();
+
+        BigDecimal currentAmount = projectEntity.getPatronAmt(); // 현재 누적 후원금
         BigDecimal supportAmount = supportRequest.getSponsorAmt(); // 합산 예정 후원금
 
-        projectEntityByProjectId.get().setPatronAmt(currentAmount.add(supportAmount)); // 후원금 합산
-        projectEntityByProjectId.get().setPatronUsers(projectEntityByProjectId.get().getPatronUsers() + 1); // 후원자 증가
+        projectEntity.setPatronAmt(currentAmount.add(supportAmount)); // 후원금 합산 SET
+        BigDecimal patronAmtSum = projectEntity.getPatronAmt(); // 후원금 합산완료 금액 GET
+
+        // 후원금액이 초과하는 경우 처리 불가 에러 발생
+        if(patronAmtSum.compareTo(BigDecimal.valueOf(100000000)) > 0) {
+            projectEntity.setPatronAmt(currentAmount); // 후원금 합산 원복
+
+            ProjectResultResponse result = ProjectResultResponse.builder()
+                    .code("5000")
+                    .message("합산 후원 금액은 100000000을 넘을 수 없습니다." + "현재 : " + currentAmount.intValue() + " 입력 : " + supportAmount.toString())
+                    .build();
+            return result;
+        }
+
+        // 후원자 MAX 초과하는 경우 처리 불가 에러 발생
+        int patronUsers = projectEntity.getPatronUsers();
+        if(patronUsers == 100000) {
+            ProjectResultResponse result = ProjectResultResponse.builder()
+                    .code("5010")
+                    .message("더이상 후원할 수 없습니다. (후원자 초과)")
+                    .build();
+            return result;
+        } else {
+            projectEntity.setPatronUsers(projectEntity.getPatronUsers() + 1); // 후원자 증가
+        }
 
         // 후원금 UPDATE
-        projectRepository.save(projectEntityByProjectId.get());
+        projectRepository.save(projectEntity);
 
         // 프로젝트 후원정보 세팅
         ProjectPatronVO projectPatronVO = ProjectPatronVO.builder()
-                .currentAmount(projectEntityByProjectId.get().getPatronAmt())
-                .goalAmount(projectEntityByProjectId.get().getGoalAmt())
+                .currentAmount(projectEntity.getPatronAmt())
+                .goalAmount(projectEntity.getGoalAmt())
                 .build();
 
         // 프로젝트 상태정보, 시간정보 세팅
@@ -356,8 +390,8 @@ public class ProjectService {
                     .artistName("USER".concat(forEachSeq))
                     .artistEmail("USER".concat(forEachSeq).concat("@gmail.com"))
                     .artistPhoneNumber("0101234".concat(String.format("%04d", i)))
-                    .projectStartTime(nowTime.format(dateTimeFormatter))
-                    .projectEndTime(nowTime.plusSeconds(i * 10).format(dateTimeFormatter))
+                    .projectStartTime(nowTime.minusMinutes(5).format(dateTimeFormatter))
+                    .projectEndTime(nowTime.plusMinutes((i+1) * 2).format(dateTimeFormatter))
                     .goalAmt(BigDecimal.valueOf((i+1) * 10000L))
                     .patronUsers(0)
                     .patronAmt(BigDecimal.ZERO)

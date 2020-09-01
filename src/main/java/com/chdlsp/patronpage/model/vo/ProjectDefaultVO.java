@@ -47,7 +47,7 @@ public class ProjectDefaultVO {
     @Email(message = "이메일 형식에 맞춰주세요.")
     private String artistEmail; // 창작자 이메일
 
-    @Pattern(regexp="[01(?:0|1|[6-9]) - (?:\\d{3}|\\d{4}) - \\d{4}$]*$", message = "휴대폰번호 양식에 맞춰주세요. (01012345678)")
+    @Pattern(regexp="^01(?:0|1|[6-9])[-](\\d{3}|\\d{4})[-](\\d{4})$", message = "휴대폰번호 양식에 맞춰주세요. (010-1234-5678)")
     private String artistPhoneNumber; // 창작자 휴대폰번호
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

@@ -13,11 +13,12 @@ simple patron-page service project
 1. java jar patron-page.jar (8080 port 사용)
 2. application 을 import 후 tomcat deploy
 
-## 주요 API 사용 예제 
+## API 샘플 데이터 
 - swagger 접속 : http://localhost:8080/swagger-ui.html#/project-controller
-- H2 DB Console : http://localhost:8080/h2 (ID/PW : admin/admin, 자세한 jdbc 정보는 application.properties 파일 참조)
+- H2 DB Console : http://localhost:8080/h2 
+ (ID/PW : admin/admin, 자세한 jdbc 정보는 application.properties 파일 참조)
 
-1. 더미 데이터 생성 : http://localhost:8080/project/dummy
+1. 더미 데이터 생성 : [GET] http://localhost:8080/project/dummy
 2. 특정 프로젝트 생성 : [POST] http://localhost:8080/project 
 ```
 [INPUT]
@@ -26,7 +27,7 @@ simple patron-page service project
     "project_desc" : "컴퓨터000",
     "artist_name" : "USER001",
     "artist_email" : "USER000@gmail.com",
-    "artist_phone_number" : "01012340000", 
+    "artist_phone_number" : "010-1234-0000", 
     "project_start_time" : "2020-08-30 17:00:00",
     "project_end_time" : "2020-09-12 21:00:00",
     "goal_amt" : 10000000,
@@ -44,7 +45,7 @@ simple patron-page service project
     "project_desc" : "컴퓨터002",
     "artist_name" : "USER002",
     "artist_email" : "USER002@gmail.com",
-    "artist_phone_number" : "01012342222", 
+    "artist_phone_number" : "010-1234-2222", 
     "project_start_time" : "2020-08-30 17:00:00",
     "project_end_time" : "2020-09-12 21:00:00",
     "goal_amt" : 10000000,

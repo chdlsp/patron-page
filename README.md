@@ -91,9 +91,11 @@ String : projectId (UUID)
 
 ## 핵심 아이디어
 1. DB PK 가 UUID 이므로 파라미터로 사용자에게 노출되지 않게 처리
-- Request 에서 projectId 를 받아 처리하는 경우, Front-end 에서 일정 수준의 검증을 거친 후 PK가 넘어왔다는 전제사항 필요
+  - Request 에서 projectId 를 받아 처리가 필요한 경우, Front-end 에서 일정 수준의 검증을 거친 후 PK가 넘어왔다는 전제사항 필요
+  - input 데이터를 처리하는데 있어 데이터 검증, 비즈니스 검증을 최대한 상세하게 수행하도록 구현
 2. Sort 시 @Pageable annotaion 활용
 3. transaction 발생 시 최대한 DML이 필요한 부분만 발생하도록 프로그램 구현
+  - 리스트 조회 시 프로젝트 상태를 업데이트 할 때 수정 대상만 업데이트 처리
 
 ## 기능 구현 내용
 1. 공통
